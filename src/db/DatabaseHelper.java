@@ -1,5 +1,8 @@
 package db;//package db;
 import parser.NewsItem;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.File;
@@ -46,7 +49,8 @@ public class DatabaseHelper {
         DatabaseHelper app = new DatabaseHelper();
         app.CreateDB();
         app.WriteDB();
-        app.ReadDB();
+        List re = app.selectAllNews();
+        System.out.println(re);
 
     }
     private  Connection connect() {
@@ -54,7 +58,7 @@ public class DatabaseHelper {
         String driver = "jdbc:sqlite:";
         String localDir = System.getProperty("user.dir");
         System.out.println(localDir);
-        File dbPath = new File(localDir + "\\db\\database.db");
+        File dbPath = new File(localDir + "\\src\\db\\database.db");
         String url = driver + dbPath;
 
         try {
@@ -81,10 +85,13 @@ public class DatabaseHelper {
             }
             else {
                 // Table does not exist
+
                 int result = this.statement.executeUpdate("CREATE TABLE news ("+
                         "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                        " x int, " +
-                        " y int)");
+                        " title TEXT, " +
+                        " link TEXT, " +
+                        " description TEXT, " +
+                        " time TEXT)");
 
                 System.out.println("result = " + result);
 
@@ -92,9 +99,13 @@ public class DatabaseHelper {
 
 
             PreparedStatement prep = null;
-            prep = connection.prepareStatement("INSERT INTO news (x, y) VALUES (?, ?);");
-            prep.setInt(1, 10);
-            prep.setInt(2, 20);
+            prep = connection.prepareStatement("INSERT INTO news (title, link, description, time) VALUES (?, ?, ? ,?);");
+            prep.setString(1, "title");
+            prep.setString(2, "link");
+            prep.setString(3, "description");
+
+            prep.setString(4, "2000-02-28 10:01:30");
+
             prep.executeUpdate();
             System.out.println("result = " + prep.executeUpdate());
 //            resultset = statement.executeQuery("SELECT * FROM news");
@@ -124,29 +135,47 @@ public class DatabaseHelper {
 
 
     }
-    public void ReadDB() {
+    public List<NewsItem> selectAllNews() {
+        List<NewsItem> list = new ArrayList<NewsItem>();
         try {
             //resultset = statement.executeQuery("SELECT * FROM news");
             this.resultset = this.statement.executeQuery("SELECT * FROM news");
             System.out.println(resultset);
+
+
             while(resultset.next())
             {
-                //int id = resultset.getInt("id");
-                String  x = Integer.toString(resultset.getInt("x"));
-                String  y = Integer.toString(resultset.getInt("y"));
+//                int id = resultset.getInt("id");
+//                private String title;
+//                private String link;
+//                private String description;
+//                private LocalDateTime time;
+
+
+                String  title = (resultset.getString("title"));
+                String  link = (resultset.getString("link"));
+                String  description = (resultset.getString("description"));
+                String  timedb = (resultset.getString("time"));
+
+//                String str = "2016-03-04 11:30:00";
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+                LocalDateTime time = LocalDateTime.parse(timedb, formatter);
 //                System.out.println( "x = " + x );
 //                System.out.println( "y = " + y );
-                System.out.println(x +  "\t" + y + "\t" );
+                System.out.println(title +  "\t" + link + "\t" + description+ "\t" + time );
 //                System.out.println();
+                NewsItem ni = new NewsItem(title, link, description, time);
+                list.add(ni);
             }
 
-            System.out.println("Таблица выведена");
+            //System.out.println("Таблица выведена");
 
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
+    return list;
     }
 
     public void selectAll(){
