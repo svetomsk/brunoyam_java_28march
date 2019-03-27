@@ -1,6 +1,5 @@
 package db;//package db;
 import parser.NewsItem;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -18,27 +17,15 @@ public class DatabaseHelper {
     public DatabaseHelper(){
     }
 
-    public static void main(String[] args) throws SQLException, ClassNotFoundException {
-        DatabaseHelper app = new DatabaseHelper();
-        app.CreateDB();
-        List re = app.selectAllNews();
-        System.out.println(re);
-        LocalDateTime ldt = LocalDateTime.now();
-        List <NewsItem> test = app.createTestItems("test title", "test link", "test description", ldt);
-        app.insertNews(test);
-        app.selectAllNews();
-        app.deleteNews(test);
-        test = app.createTestItems("updated title", "updated link", "updated description", ldt);
-        app.updateNews(test);
-    }
 
-    private List<NewsItem> createTestItems(String title, String link, String description, LocalDateTime time){
+    public List<NewsItem> createTestItems(String title, String link, String description, LocalDateTime time){
         List<NewsItem> list = new ArrayList<NewsItem>();
                 System.out.println("FOR TEST "+title + "\t" + link + "\t" + description + "\t" + time);
                 NewsItem ni = new NewsItem(title, link, description, time);
                 list.add(ni);
     return list;
 }
+
 //     SQLite connection string
     private  Connection connect() {
         String driver = "jdbc:sqlite:";
