@@ -8,79 +8,44 @@ import java.util.List;
 import java.io.File;
 import java.sql.*;
 
-//public class DatabaseHelper {
-//    // return all rows
-//    public List<NewsItem> selectAllNews() {
-//        return new ArrayList<>();
-//    }
-//
-//    // return only last row
-//    public List<NewsItem> selectLastNews() {
-//        return new ArrayList<>();
-//    }
-//
-//    public boolean updateNews(List<NewsItem> items) {
-//        return false;
-//    }
-//
-//    public boolean deleteNews(List<NewsItem> items) {
-//        return false;
-//    }
-//
-//    public boolean insertNews(List<NewsItem> items) {
-//        return false;
-//    }
-
 
 public class DatabaseHelper {
     public Connection connection;
     public Statement statement;
     public ResultSet resultset;
-    private String dformat = "yyyy-MM-dd HH:mm:ss";
+    private String dformat = "yyyy-MM-dd HH:mm:ss.SSS";
 
     public DatabaseHelper(){
-
     }
-
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
-
-        System.out.println("new string print");
-
         DatabaseHelper app = new DatabaseHelper();
         app.CreateDB();
-        //app.WriteDB();
         List re = app.selectAllNews();
-        re = app.selectLastNews();
         System.out.println(re);
-
-
-        app.insertNews(app.createtestitems());
-
-        //app.deleteNews(test);
-
+        LocalDateTime ldt = LocalDateTime.now();
+        List <NewsItem> test = app.createTestItems("test title", "test link", "test description", ldt);
+        app.insertNews(test);
+        app.selectAllNews();
+        app.deleteNews(test);
+        test = app.createTestItems("updated title", "updated link", "updated description", ldt);
+        app.updateNews(test);
     }
-    private List<NewsItem> createtestitems(){
+
+    private List<NewsItem> createTestItems(String title, String link, String description, LocalDateTime time){
         List<NewsItem> list = new ArrayList<NewsItem>();
-                String title = (("test title"));
-                String link = (("test link"));
-                String description = (("test description"));
-                LocalDateTime time = LocalDateTime.now();
-//                String timedb = ldt.format(formatter);
-//                LocalDateTime time = LocalDateTime.parse(timedb, formatter);
-                System.out.println(title + "\t" + link + "\t" + description + "\t" + time);
+                System.out.println("FOR TEST "+title + "\t" + link + "\t" + description + "\t" + time);
                 NewsItem ni = new NewsItem(title, link, description, time);
                 list.add(ni);
     return list;
 }
+//     SQLite connection string
     private  Connection connect() {
-        // SQLite connection string
         String driver = "jdbc:sqlite:";
         String localDir = System.getProperty("user.dir");
         System.out.println(localDir);
         File dbPath = new File(localDir + "\\src\\db\\database.db");
         String url = driver + dbPath;
-
         try {
             connection = DriverManager.getConnection(url);
         } catch (SQLException e) {
@@ -92,12 +57,9 @@ public class DatabaseHelper {
     public void CreateDB(){
         try {
             this.connection = this.connect();
-
             Statement statement = null;
-
             this.statement = connection.createStatement();
             DatabaseMetaData dbm = connection.getMetaData();
-
             resultset = dbm.getTables(null, null, "news", null);
             if (resultset.next()) {
                 // Table exists
@@ -105,39 +67,35 @@ public class DatabaseHelper {
             }
             else {
                 // Table does not exist
-
                 int result = this.statement.executeUpdate("CREATE TABLE news ("+
                         "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                         " title TEXT, " +
                         " link TEXT, " +
                         " description TEXT, " +
                         " time TEXT)");
-
                 System.out.println("result = " + result);
-
             }
-
-
             PreparedStatement prep = null;
             prep = connection.prepareStatement("INSERT INTO news (title, link, description, time) VALUES (?, ?, ? ,?);");
             prep.setString(1, "title");
             prep.setString(2, "link");
             prep.setString(3, "description");
-
-            prep.setString(4, "2000-02-28 10:01:301");
-
+            prep.setString(4, "2000-02-28 10:01:01.310");
             prep.executeUpdate();
             System.out.println("result = " + prep.executeUpdate());
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
     }
+
+    // return all rows
     public List<NewsItem> selectAllNews() {
         return selectFromDB("SELECT * FROM news");
     }
+
+    // return only last row
     public List<NewsItem> selectLastNews() {
+        System.out.println("last news");
         return selectFromDB("SELECT * FROM news ORDER BY id DESC LIMIT 1");
     }
 
@@ -146,14 +104,13 @@ public class DatabaseHelper {
         try {
             this.resultset = this.statement.executeQuery(sql);
             System.out.println(resultset);
-
             while(resultset.next())
             {
                 String  title = (resultset.getString("title"));
                 String  link = (resultset.getString("link"));
                 String  description = (resultset.getString("description"));
                 String  timedb = (resultset.getString("time"));
-
+                System.out.println(timedb);
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dformat);
                 LocalDateTime time = LocalDateTime.parse(timedb, formatter);
                 System.out.println(title +  "\t" + link + "\t" + description+ "\t" + time );
@@ -166,61 +123,73 @@ public class DatabaseHelper {
         return list;
     }
 
+//delete news by datetime
     public boolean deleteNews(List<NewsItem> items) {
-
         for (int i = 0; i < items.size(); i++) {
-            LocalDateTime time = items.get(i).getTime();
+            LocalDateTime ldt = items.get(i).getTime();
+            String time = ldt.toString().replace( "T" , " " );
             System.out.println("deleteNews time=" + time);
-            String query = "delete from users where time = ?";
+            String query = "DELETE FROM news WHERE time = ?";
             try {
-                this.resultset = this.statement.executeQuery(query);
                 PreparedStatement preparedStmt = connection.prepareStatement(query);
-                preparedStmt.setString(1, time.toString());
+                preparedStmt.setString(1, time);
                 preparedStmt.execute();
-
             } catch (SQLException e) {
                 e.printStackTrace();
+                return false;
             }
-
         }
         return true;
     }
 
         public boolean insertNews(List<NewsItem> items) {
             for (int i = 0; i < items.size(); i++) {
-
                 String  title = items.get(i).getTitle();
                 String  link = items.get(i).getLink();
                 String  description = items.get(i).getDescription();
                 LocalDateTime timedb = items.get(i).getTime();
-
-                LocalDateTime time = items.get(i).getTime();
-                System.out.println("Insert news");
-
-               // String query = "UPDATE news SET title = ?, link = ?, description = ?  WHERE id = ? AND seq_num = ?";
-
+                String  time = timedb.toString().replace( "T" , " " );
                 try {
-                    statement.executeUpdate("INSERT INTO news " + "VALUES ("
-                            + title +","
-                            + link +","
-                            + description +","
-                            + timedb.toString() + ")");
-
-
-//                    this.resultset = this.statement.executeQuery(query);
-//                    PreparedStatement preparedStmt = connection.prepareStatement(query);
-//                    preparedStmt.setString(1, time.toString());
-//                    preparedStmt.execute();
-
+                    PreparedStatement prep = null;
+                    prep = connection.prepareStatement("INSERT INTO news (title, link, description, time) VALUES (?, ?, ? ,?);");
+                    prep.setString(1, title);
+                    prep.setString(2, link);
+                    prep.setString(3, description);
+                    prep.setString(4, time);
+                    prep.executeUpdate();
                 } catch (SQLException e) {
                     e.printStackTrace();
+                    return false;
                 }
-
             }
             return true;
     }
 
-    public void WriteDB(){
-        System.out.println();
+
+        public boolean updateNews(List<NewsItem> items) {
+            for (int i = 0; i < items.size(); i++) {
+                String  title = items.get(i).getTitle();
+                String  link = items.get(i).getLink();
+                String  description = items.get(i).getDescription();
+                LocalDateTime ldt = items.get(i).getTime();
+                String time = ldt.toString().replace( "T" , " " );
+                System.out.println("updateNews time=" + time);
+                String query = "UPDATE news SET title = ?, "
+                        +"link = ? ,"
+                        +"description = ?"
+                        +"WHERE time = ?";
+                try {
+                    PreparedStatement preparedStmt = connection.prepareStatement(query);
+                    preparedStmt.setString(1, title);
+                    preparedStmt.setString(2, link);
+                    preparedStmt.setString(3, description);
+                    preparedStmt.setString(4, time);
+                    preparedStmt.execute();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
+            return true;
     }
 }
