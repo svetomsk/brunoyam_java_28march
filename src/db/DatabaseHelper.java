@@ -36,6 +36,7 @@ public class DatabaseHelper {
     public Connection connection;
     public Statement statement;
     public ResultSet resultset;
+    private String dformat = "yyyy-MM-dd HH:mm:ss";
 
     public DatabaseHelper(){
 
@@ -48,11 +49,30 @@ public class DatabaseHelper {
 
         DatabaseHelper app = new DatabaseHelper();
         app.CreateDB();
-        app.WriteDB();
+        //app.WriteDB();
         List re = app.selectAllNews();
+        re = app.selectLastNews();
         System.out.println(re);
 
+
+        app.insertNews(app.createtestitems());
+
+        //app.deleteNews(test);
+
     }
+    private List<NewsItem> createtestitems(){
+        List<NewsItem> list = new ArrayList<NewsItem>();
+                String title = (("test title"));
+                String link = (("test link"));
+                String description = (("test description"));
+                LocalDateTime time = LocalDateTime.now();
+//                String timedb = ldt.format(formatter);
+//                LocalDateTime time = LocalDateTime.parse(timedb, formatter);
+                System.out.println(title + "\t" + link + "\t" + description + "\t" + time);
+                NewsItem ni = new NewsItem(title, link, description, time);
+                list.add(ni);
+    return list;
+}
     private  Connection connect() {
         // SQLite connection string
         String driver = "jdbc:sqlite:";
@@ -104,95 +124,103 @@ public class DatabaseHelper {
             prep.setString(2, "link");
             prep.setString(3, "description");
 
-            prep.setString(4, "2000-02-28 10:01:30");
+            prep.setString(4, "2000-02-28 10:01:301");
 
             prep.executeUpdate();
             System.out.println("result = " + prep.executeUpdate());
-//            resultset = statement.executeQuery("SELECT * FROM news");
-//            System.out.println(resultset);
-//            while(resultset.next())
-//            {
-//                //int id = resultset.getInt("id");
-//                String  x = Integer.toString(resultset.getInt("x"));
-//                String  y = Integer.toString(resultset.getInt("y"));
-//
-////                String  x = resultset.getString("x");
-////                String  y = resultset.getString("y");
-//                System.out.println( "x = " + x );
-//                System.out.println( "y = " + y );
-//                System.out.println();
-//            }
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
     }
-
-    public void WriteDB(){
-        System.out.println();
-
-
-
-    }
     public List<NewsItem> selectAllNews() {
+        return selectFromDB("SELECT * FROM news");
+    }
+    public List<NewsItem> selectLastNews() {
+        return selectFromDB("SELECT * FROM news ORDER BY id DESC LIMIT 1");
+    }
+
+    protected List<NewsItem> selectFromDB(String sql) {
         List<NewsItem> list = new ArrayList<NewsItem>();
         try {
-            //resultset = statement.executeQuery("SELECT * FROM news");
-            this.resultset = this.statement.executeQuery("SELECT * FROM news");
+            this.resultset = this.statement.executeQuery(sql);
             System.out.println(resultset);
-
 
             while(resultset.next())
             {
-//                int id = resultset.getInt("id");
-//                private String title;
-//                private String link;
-//                private String description;
-//                private LocalDateTime time;
-
-
                 String  title = (resultset.getString("title"));
                 String  link = (resultset.getString("link"));
                 String  description = (resultset.getString("description"));
                 String  timedb = (resultset.getString("time"));
 
-//                String str = "2016-03-04 11:30:00";
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dformat);
                 LocalDateTime time = LocalDateTime.parse(timedb, formatter);
-//                System.out.println( "x = " + x );
-//                System.out.println( "y = " + y );
                 System.out.println(title +  "\t" + link + "\t" + description+ "\t" + time );
-//                System.out.println();
                 NewsItem ni = new NewsItem(title, link, description, time);
                 list.add(ni);
             }
-
-            //System.out.println("Таблица выведена");
-
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    return list;
+        return list;
     }
 
-    public void selectAll(){
-        String sql = "SELECT id, name, capacity FROM warehouses";
+    public boolean deleteNews(List<NewsItem> items) {
 
-        try (Connection conn = this.connect();
-             Statement stmt  = conn.createStatement();
-             ResultSet rs    = stmt.executeQuery(sql)){
+        for (int i = 0; i < items.size(); i++) {
+            LocalDateTime time = items.get(i).getTime();
+            System.out.println("deleteNews time=" + time);
+            String query = "delete from users where time = ?";
+            try {
+                this.resultset = this.statement.executeQuery(query);
+                PreparedStatement preparedStmt = connection.prepareStatement(query);
+                preparedStmt.setString(1, time.toString());
+                preparedStmt.execute();
 
-            // loop through the result set
-            while (rs.next()) {
-                System.out.println(rs.getInt("id") +  "\t" +
-                        rs.getString("name") + "\t" +
-                        rs.getDouble("capacity"));
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
+
         }
+        return true;
+    }
+
+        public boolean insertNews(List<NewsItem> items) {
+            for (int i = 0; i < items.size(); i++) {
+
+                String  title = items.get(i).getTitle();
+                String  link = items.get(i).getLink();
+                String  description = items.get(i).getDescription();
+                LocalDateTime timedb = items.get(i).getTime();
+
+                LocalDateTime time = items.get(i).getTime();
+                System.out.println("Insert news");
+
+               // String query = "UPDATE news SET title = ?, link = ?, description = ?  WHERE id = ? AND seq_num = ?";
+
+                try {
+                    statement.executeUpdate("INSERT INTO news " + "VALUES ("
+                            + title +","
+                            + link +","
+                            + description +","
+                            + timedb.toString() + ")");
+
+
+//                    this.resultset = this.statement.executeQuery(query);
+//                    PreparedStatement preparedStmt = connection.prepareStatement(query);
+//                    preparedStmt.setString(1, time.toString());
+//                    preparedStmt.execute();
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+            }
+            return true;
+    }
+
+    public void WriteDB(){
+        System.out.println();
     }
 }
