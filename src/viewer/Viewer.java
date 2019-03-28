@@ -1,5 +1,6 @@
 package viewer;
 
+import controller.Controller;
 import parser.NewsItem;
 
 import javax.swing.*;
@@ -15,7 +16,7 @@ import java.util.List;
 
 public class Viewer extends JFrame {
 
-//    СВЕТОЗАР!!!!ВОТ ВАЖНЫЙ МОМЕНТ
+    //    СВЕТОЗАР!!!!ВОТ ВАЖНЫЙ МОМЕНТ
 //    Далее идёт массив url с которых тянуть новости, я этого списка нигде не нашел
 //    Так что создал сам. + его хранение на диске
     private static ArrayList<String> urlList;
@@ -29,15 +30,17 @@ public class Viewer extends JFrame {
     private static JTextPane jTextPaneNews;
     private static JList jListWeb;
     private static JScrollPane jScrollPaneWeb;
-//  Это для работы со списком. В данном случае, со списком сайтов
+    //  Это для работы со списком. В данном случае, со списком сайтов
     private static DefaultListModel listModelWeb;
+    private static Controller controller;
 
 //    Это ненужные заглушки
-    private static int temp=0;
-    private static String news="";
+//    private static int temp=0;
+//    private static String news="";
 
-    public Viewer(){
+    public Viewer(Controller controller){
 
+        this.controller = controller;
         jFrame = new JFrame("RSS Reader");
         jFrame.setDefaultCloseOperation(EXIT_ON_CLOSE);
         jFrame.setBounds(50,50,750,550);
@@ -58,11 +61,12 @@ public class Viewer extends JFrame {
         jScrollPaneNews.setBounds(20,50,450,400);;
         jPanelNews.add(jScrollPaneNews);
 
-
+//         Font.BOLD (жирный)
         Font font = new Font("TimesRoman", Font.PLAIN, 16);
         jTextPaneNews.setFont(font);
         jTextPaneNews.setText("На кнопки можно смело понажимать, особенно много раз на кнопку Update. \n");
         jButtonUpdate.addMouseListener(new MyLisenMouseUpdate());
+
 
 //        Это часть вторая - относящаяся к правой части. Где поле адресов сайтов
         jPanelWeb = new JPanel();
@@ -71,7 +75,7 @@ public class Viewer extends JFrame {
         jButtonAddWeb.setBounds(50,30,100,30);
         jButtonDelWeb = new JButton("Del Web");
         jButtonDelWeb.setBounds(50,70,100,30);
-        
+
         jPanelWeb.setBounds(510,10,680,500);
         jPanelWeb.add(jButtonAddWeb);
         jPanelWeb.add(jButtonDelWeb);
@@ -89,7 +93,17 @@ public class Viewer extends JFrame {
 
     }
 
-    public void updateNewsList(List<NewsItem> news) {
+    public static void updateNewsList(List<NewsItem> news) {
+
+        String tempStr="";
+        String newsText = "";
+
+        for (NewsItem newsItem: news ) {
+            tempStr = "Title: "+  newsItem.getTitle() + "\n" + "Message: "+ newsItem.getDescription()+"\n\n";
+            newsText = tempStr + newsText;
+        }
+        jTextPaneNews.setText(newsText);
+        jTextPaneNews.setCaretPosition(0);
 
     }
 
@@ -98,18 +112,12 @@ public class Viewer extends JFrame {
         //  Далее всё заглушки
         @Override
         public void mousePressed(MouseEvent e) {
-            super.mousePressed(e);
-            String tempStr;
-            temp++;
-            tempStr = "News Title "+temp + "\n" +"Link "+temp + "\n" +"discription "+"\n\n";
-            news = tempStr + news;
+            controller.update();
 
-            jTextPaneNews.setText(news);
-            jTextPaneNews.setCaretPosition(0);
         }
     }
 
-//    Слушатель кнопки удаления сайта из списка
+    //    Слушатель кнопки удаления сайта из списка
     private  static class MyLisenMouseWebDel extends MouseAdapter {
         @Override
         public void mousePressed(MouseEvent e) {
@@ -125,7 +133,7 @@ public class Viewer extends JFrame {
         }
     }
 
-//  Слушатель кнопки добавления нового сайта
+    //  Слушатель кнопки добавления нового сайта
     private static class MyLisenMouseWebAdd extends MouseAdapter {
 
         @Override
@@ -150,7 +158,7 @@ public class Viewer extends JFrame {
             }
         }
     }
-//    Метод вывода списка сайтов
+    //    Метод вывода списка сайтов
     private static void writeWeb(){
 //        Это если первый вызов метода, то есть инициализация списка
         if ( jScrollPaneWeb == null) {
@@ -160,7 +168,7 @@ public class Viewer extends JFrame {
             for (String str:urlList) {
                 listModelWeb.addElement(str);
             }
-             jScrollPaneWeb = new JScrollPane(jListWeb);
+            jScrollPaneWeb = new JScrollPane(jListWeb);
             jScrollPaneWeb.setBounds(20, 120, 150, 300);
             jPanelWeb.add(jScrollPaneWeb);
         } else {
@@ -170,7 +178,7 @@ public class Viewer extends JFrame {
             jListWeb.ensureIndexIsVisible( listModelWeb.size() - 1 );
         }
     }
-//    Загрузка массива сайтов с диска
+    //    Загрузка массива сайтов с диска
     private static ArrayList<String> loadURL(){
         ArrayList<String> arrayURL = new ArrayList<>();
         File file = new File("urlWeb.ser");
@@ -178,7 +186,7 @@ public class Viewer extends JFrame {
             if (!file.createNewFile()) {
                 FileInputStream fileInputStream = new FileInputStream(file);
                 ObjectInputStream input = new ObjectInputStream(fileInputStream);
-    //            arrayKey1ToKey2 = (HashMap<Long, HashMap<Long, int[]>>) input.readObject();
+                //            arrayKey1ToKey2 = (HashMap<Long, HashMap<Long, int[]>>) input.readObject();
                 try {
                     arrayURL = (ArrayList<String>) input.readObject();
                 } catch (ClassNotFoundException e) {
@@ -186,34 +194,34 @@ public class Viewer extends JFrame {
                 }
                 fileInputStream.close();
                 input.close();
-        }
+            }
         } catch (IOException e) {
             System.out.println("Что то не получилось с файлом хранящем адреса сайтов");
         }
         return arrayURL;
-        }
-
-//        Сохранение массива сайтов на диск
-        private static void saveURL(ArrayList arraySaveUrl){
-
-            FileOutputStream fileOutputStream = null;
-            try {
-                fileOutputStream = new FileOutputStream( new File("urlWeb.ser"));
-            } catch (FileNotFoundException e) {
-                System.out.println("Файл с адресами сайтов не найден");
-            }
-            ObjectOutputStream output = null;
-            try {
-                output = new ObjectOutputStream(fileOutputStream);
-                output.writeObject(arraySaveUrl);
-                fileOutputStream.close();
-                output.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
     }
 
-//  Это геттер на массив сайтов
+    //        Сохранение массива сайтов на диск
+    private static void saveURL(ArrayList arraySaveUrl){
+
+        FileOutputStream fileOutputStream = null;
+        try {
+            fileOutputStream = new FileOutputStream( new File("urlWeb.ser"));
+        } catch (FileNotFoundException e) {
+            System.out.println("Файл с адресами сайтов не найден");
+        }
+        ObjectOutputStream output = null;
+        try {
+            output = new ObjectOutputStream(fileOutputStream);
+            output.writeObject(arraySaveUrl);
+            fileOutputStream.close();
+            output.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //  Это геттер на массив сайтов
     public static List<String> getUrlList() {
         return urlList;
     }
