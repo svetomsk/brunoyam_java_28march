@@ -50,4 +50,10 @@ public class NewsItem {
     public void setTime(LocalDateTime time) {
         this.time = time;
     }
+
+    @Override
+    public String toString() {
+        return "News Item: title = " + title + ", link " + link
+                + ", description" + description + "time" + time;
+    }
 }
