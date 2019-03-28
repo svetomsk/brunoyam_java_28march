@@ -25,6 +25,7 @@ public class Controller {
         viewer = new Viewer(this);
         networkHelper = new NetworkHelper();
         xmlParser = new XMLParser();
+        viewer.setVisible(true);
     }
 
     public void update() {
@@ -69,7 +70,6 @@ public class Controller {
             if (updated) {
                 databaseHelper.insertNews(newURLNews);
             }
-
         }
 
         if (updated){
