@@ -1,8 +1,10 @@
+import viewer.Viewer;
+
 import java.sql.*;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("new string print");
+//        System.out.println("new string print");
 //
 //        Connection connection;
 //        String driver = "jdbc:sqlite:";
@@ -20,5 +22,7 @@ public class Main {
 //        while(resultSet.next()) {
 //            System.out.println(resultSet.);
 //        }
+
+        new Viewer();
     }
 }

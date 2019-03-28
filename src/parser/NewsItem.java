@@ -9,7 +9,7 @@ public class NewsItem {
     private LocalDateTime time;
 
     public NewsItem() {
-
+      // Что сделать тут надо ?
     }
 
     public NewsItem(String title, String link, String description, LocalDateTime time) {
@@ -49,5 +49,10 @@ public class NewsItem {
 
     public void setTime(LocalDateTime time) {
         this.time = time;
+    }
+    @Override
+    public String toString() {
+        return "News Item: title = " + title + ", link " + link
+                + ", description" + description + ", time " + time;
     }
 }
