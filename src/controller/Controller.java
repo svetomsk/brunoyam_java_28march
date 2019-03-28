@@ -6,6 +6,8 @@ import parser.NewsItem;
 import parser.XMLParser;
 import viewer.Viewer;
 
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +23,7 @@ public class Controller {
     private boolean updated;
 
     public Controller(){
+
         databaseHelper = new DatabaseHelper();
         viewer = new Viewer(this);
         networkHelper = new NetworkHelper();
@@ -47,19 +50,30 @@ public class Controller {
 
         // get the URLs
         List<String> urlList = viewer.getUrlList();
-        List<NewsItem> xmlRecords;
+        List<NewsItem> xmlRecords = null;
         updated = false;
 
         //get the new items from net;
         for(String listURL : urlList) {
-            String urlContext = networkHelper.fetchHTML(listURL);
-            xmlRecords = xmlParser.parseXML(urlContext);
+            String urlContext = null;
+            try {
+                urlContext = networkHelper.fetchHTML(listURL);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                xmlRecords = xmlParser.parseXML(urlContext);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ParserConfigurationException e) {
+                e.printStackTrace();
+            }
 
             // check the time of the records
             List<NewsItem> newURLNews = new ArrayList<NewsItem>();
 
             for (NewsItem netItem : xmlRecords) {
-                if (databaseTime.isAfter(netItem.getTime())) {
+                if (databaseTime.isBefore(netItem.getTime())) {
                     newURLNews.add(netItem);
                 }
             }
