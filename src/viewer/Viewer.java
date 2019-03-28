@@ -32,13 +32,15 @@ public class Viewer extends JFrame {
     private static JScrollPane jScrollPaneWeb;
     //  Это для работы со списком. В данном случае, со списком сайтов
     private static DefaultListModel listModelWeb;
+    private static Controller controller;
 
-    //    Это ненужные заглушки
-    private static int temp=0;
-    private static String news="";
+//    Это ненужные заглушки
+//    private static int temp=0;
+//    private static String news="";
 
     public Viewer(Controller controller){
 
+        this.controller = controller;
         jFrame = new JFrame("RSS Reader");
         jFrame.setDefaultCloseOperation(EXIT_ON_CLOSE);
         jFrame.setBounds(50,50,750,550);
@@ -59,11 +61,12 @@ public class Viewer extends JFrame {
         jScrollPaneNews.setBounds(20,50,450,400);;
         jPanelNews.add(jScrollPaneNews);
 
-
+//         Font.BOLD (жирный)
         Font font = new Font("TimesRoman", Font.PLAIN, 16);
         jTextPaneNews.setFont(font);
         jTextPaneNews.setText("На кнопки можно смело понажимать, особенно много раз на кнопку Update. \n");
         jButtonUpdate.addMouseListener(new MyLisenMouseUpdate());
+
 
 //        Это часть вторая - относящаяся к правой части. Где поле адресов сайтов
         jPanelWeb = new JPanel();
@@ -90,7 +93,17 @@ public class Viewer extends JFrame {
 
     }
 
-    public void updateNewsList(List<NewsItem> news) {
+    public static void updateNewsList(List<NewsItem> news) {
+
+        String tempStr="";
+        String newsText = "";
+
+        for (NewsItem newsItem: news ) {
+            tempStr = "Title: "+  newsItem.getTitle() + "\n" + "Message: "+ newsItem.getDescription()+"\n\n";
+            newsText = tempStr + newsText;
+        }
+        jTextPaneNews.setText(newsText);
+        jTextPaneNews.setCaretPosition(0);
 
     }
 
@@ -99,14 +112,8 @@ public class Viewer extends JFrame {
         //  Далее всё заглушки
         @Override
         public void mousePressed(MouseEvent e) {
-            super.mousePressed(e);
-            String tempStr;
-            temp++;
-            tempStr = "News Title "+temp + "\n" +"Link "+temp + "\n" +"discription "+"\n\n";
-            news = tempStr + news;
+            controller.update();
 
-            jTextPaneNews.setText(news);
-            jTextPaneNews.setCaretPosition(0);
         }
     }
 
