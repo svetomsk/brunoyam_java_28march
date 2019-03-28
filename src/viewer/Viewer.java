@@ -24,7 +24,10 @@ public class Viewer extends JFrame {
     private static JButton jButtonAddWeb;
     private static JButton jButtonDelWeb;
     private static JTextPane jTextPaneNews;
-    private static JTextPane jTextPaneWeb;
+    private static JList jListWeb;
+    private static JScrollPane jScrollPaneWeb;
+
+    private static DefaultListModel listModelWeb;
 
     private static int temp=0;
     private static String news="";
@@ -68,30 +71,45 @@ public class Viewer extends JFrame {
         jPanelWeb.setBounds(510,10,680,500);
         jPanelWeb.add(jButtonAddWeb);
         jPanelWeb.add(jButtonDelWeb);
-        
-        jTextPaneWeb = new JTextPane();
-        JScrollPane jScrollPaneWeb = new JScrollPane(jTextPaneWeb);
-        jScrollPaneWeb.setBounds(20,120,150,300);
-        jPanelWeb.add(jScrollPaneWeb);
 
         urlList = loadURL();
         writeWeb();
 
+
         jButtonAddWeb.addMouseListener(new MyLisenMouseWebAdd());
-
-
+        jButtonDelWeb.addMouseListener(new MyLisenMouseWebDel());
         jFrame.add(jPanelNews);
         jFrame.add(jPanelWeb);
         jFrame.setVisible(true);
 
     }
-    
-    private static void writeWeb(){
-        String urlString="";
-        for (String str:urlList ) {
-            urlString = urlString + str + "\n";
+    private  static class MyLisenMouseWebDel extends MouseAdapter {
+        @Override
+        public void mousePressed(MouseEvent e) {
+            super.mousePressed(e);
+            System.out.println(jListWeb.getSelectedIndex());
+            urlList.remove(jListWeb.getSelectedIndex());
+            listModelWeb.remove(jListWeb.getSelectedIndex());
+            saveURL(urlList);
         }
-        jTextPaneWeb.setText(urlString);
+    }
+
+
+    private static void writeWeb(){
+        if ( jScrollPaneWeb == null) {
+            listModelWeb = new DefaultListModel();
+            jListWeb = new JList(listModelWeb);
+            for (String str:urlList) {
+                listModelWeb.addElement(str);
+            }
+             jScrollPaneWeb = new JScrollPane(jListWeb);
+            jScrollPaneWeb.setBounds(20, 120, 150, 300);
+            jPanelWeb.add(jScrollPaneWeb);
+        } else {
+            listModelWeb.addElement(urlList.get(urlList.size()-1));
+            jListWeb.setSelectedIndex( listModelWeb.size() - 1);
+            jListWeb.ensureIndexIsVisible( listModelWeb.size() - 1 );
+        }
     }
     
     
@@ -103,6 +121,7 @@ public class Viewer extends JFrame {
             urlList.add(JOptionPane.showInputDialog(null,"Введите url сайта"));
             saveURL(urlList);
             writeWeb();
+//            jScrollPaneWeb.repaint();
             
         }
     }
