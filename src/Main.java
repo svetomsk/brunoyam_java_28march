@@ -1,3 +1,4 @@
+import controller.Controller;
 import network.NetworkHelper;
 import parser.NewsItem;
 import parser.XMLParser;
@@ -33,5 +34,8 @@ public class Main {
 //        new Viewer();
         String data = NetworkHelper.fetchHTML("https://www.sports.ru/tribuna/blogs/utkin/rss.xml");
         List<NewsItem> items = XMLParser.parseXML(data);
+        Controller cont = new Controller();
+
+
     }
 }

@@ -25,7 +25,7 @@ public class XMLParser {
     // here example of using library to parse XML:
     // https://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser/
     public static List<NewsItem> parseXML(String source) throws IOException, ParserConfigurationException {
-        PrintWriter writer = new PrintWriter("example.xml");
+        PrintWriter writer = new PrintWriter("Example.xml");
         writer.print(source);
         writer.close();
         ArrayList<NewsItem> list = new ArrayList<>();
@@ -33,9 +33,10 @@ public class XMLParser {
             // объект документа
             File file = new File("Example.xml");
             DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            Document document = documentBuilder.parse("Example.xml");
+            Document document = documentBuilder.parse(file);
             document.getDocumentElement().normalize();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("E, d MMM yyyy HH:mm:ss");
+            //LocalDateTime time = LocalDateTime.parse("Thu, 15 Aug 2013 17:37:13 +0300", DateTimeFormatter.RFC_1123_DATE_TIME);
             LocalDateTime time = LocalDateTime.parse("Thu, 15 Aug 2013 17:37:13 +0300", DateTimeFormatter.RFC_1123_DATE_TIME);
             System.out.println(time);
 

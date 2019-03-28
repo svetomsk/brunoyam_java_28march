@@ -9,7 +9,7 @@ public class DatabaseHelperController {
     public static void main(String[] args) {
         DatabaseHelper app = new DatabaseHelper();
         app.CreateDB();
-        List re = app.selectAllNews();
+        List  re= app.selectAllNews();
         System.out.println(re);
         LocalDateTime ldt = LocalDateTime.now();
         List <NewsItem> test = app.createTestItems("test title", "test link", "test description", ldt);

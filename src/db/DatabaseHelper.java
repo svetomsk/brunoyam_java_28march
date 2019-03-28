@@ -12,7 +12,7 @@ public class DatabaseHelper {
     public Connection connection;
     public Statement statement;
     public ResultSet resultset;
-    private String dformat = "yyyy-MM-dd HH:mm:ss.SSS";
+    private String dformat = "yyyy-MM-dd HH:mm:ss";
 
     public DatabaseHelper(){
     }
@@ -67,7 +67,7 @@ public class DatabaseHelper {
             prep.setString(1, "title");
             prep.setString(2, "link");
             prep.setString(3, "description");
-            prep.setString(4, "2000-02-28 10:01:01.310");
+            prep.setString(4, "2000-02-28 10:01:01");
             prep.executeUpdate();
             System.out.println("result = " + prep.executeUpdate());
         } catch (SQLException e) {
