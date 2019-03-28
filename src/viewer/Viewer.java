@@ -7,6 +7,9 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,9 +29,10 @@ public class Viewer extends JFrame {
     private static JTextPane jTextPaneNews;
     private static JList jListWeb;
     private static JScrollPane jScrollPaneWeb;
-
+//  Это для работы со списком. В данном случае, со списком сайтов
     private static DefaultListModel listModelWeb;
 
+//    Это ненужные заглушки
     private static int temp=0;
     private static String news="";
 
@@ -71,8 +75,9 @@ public class Viewer extends JFrame {
         jPanelWeb.setBounds(510,10,680,500);
         jPanelWeb.add(jButtonAddWeb);
         jPanelWeb.add(jButtonDelWeb);
-
+//       Загрузка сайтов с диска
         urlList = loadURL();
+//        Распечатка их в окне
         writeWeb();
 
 
@@ -83,20 +88,73 @@ public class Viewer extends JFrame {
         jFrame.setVisible(true);
 
     }
+
+    public void updateNewsList(List<NewsItem> news) {
+
+    }
+
+    //  Слушатель кнопки Update
+    private static class MyLisenMouseUpdate extends MouseAdapter {
+        //  Далее всё заглушки
+        @Override
+        public void mousePressed(MouseEvent e) {
+            super.mousePressed(e);
+            String tempStr;
+            temp++;
+            tempStr = "News Title "+temp + "\n" +"Link "+temp + "\n" +"discription "+"\n\n";
+            news = tempStr + news;
+
+            jTextPaneNews.setText(news);
+            jTextPaneNews.setCaretPosition(0);
+        }
+    }
+
+//    Слушатель кнопки удаления сайта из списка
     private  static class MyLisenMouseWebDel extends MouseAdapter {
         @Override
         public void mousePressed(MouseEvent e) {
             super.mousePressed(e);
-            System.out.println(jListWeb.getSelectedIndex());
-            urlList.remove(jListWeb.getSelectedIndex());
-            listModelWeb.remove(jListWeb.getSelectedIndex());
-            saveURL(urlList);
+//            Выскакивающая менюшка для подтверждения удаления сайта из списка. ( 0 = да, 1 = нет, 2 = отмена)
+            int menu = JOptionPane.showConfirmDialog(null,"Вы точно хотите удалить "+urlList.get(jListWeb.getSelectedIndex()));
+            if (menu == 0) {
+                urlList.remove(jListWeb.getSelectedIndex());
+                listModelWeb.remove(jListWeb.getSelectedIndex());
+//                Сохранение изменений на диск
+                saveURL(urlList);
+            }
         }
     }
 
+//  Слушатель кнопки добавления нового сайта
+    private static class MyLisenMouseWebAdd extends MouseAdapter {
 
+        @Override
+        public void mousePressed(MouseEvent e) {
+            super.mousePressed(e);
+            String tempStringUrl = JOptionPane.showInputDialog(null, "Введите url сайта");
+//            Это первая проверка на существование уже такого сайта в списке.
+            if (urlList.contains(tempStringUrl)) {
+                JOptionPane.showMessageDialog(null,"Такой адрес уже есть");
+            } else {
+                URL url = null;
+                try {
+                    url = new URL(tempStringUrl);
+                    urlList.add(tempStringUrl);
+                    saveURL(urlList);
+                    writeWeb();
+
+                } catch (MalformedURLException e1) {
+//                    Вторая проверка, если адресс введен неверно
+                    JOptionPane.showMessageDialog(null,"Такой веб не существует");
+                }
+            }
+        }
+    }
+//    Метод вывода списка сайтов
     private static void writeWeb(){
+//        Это если первый вызов метода, то есть инициализация списка
         if ( jScrollPaneWeb == null) {
+//            Далее танцы с бубном, присущее JList
             listModelWeb = new DefaultListModel();
             jListWeb = new JList(listModelWeb);
             for (String str:urlList) {
@@ -106,27 +164,13 @@ public class Viewer extends JFrame {
             jScrollPaneWeb.setBounds(20, 120, 150, 300);
             jPanelWeb.add(jScrollPaneWeb);
         } else {
+//            Это если просто добавился новый элемент
             listModelWeb.addElement(urlList.get(urlList.size()-1));
             jListWeb.setSelectedIndex( listModelWeb.size() - 1);
             jListWeb.ensureIndexIsVisible( listModelWeb.size() - 1 );
         }
     }
-    
-    
-    private static class MyLisenMouseWebAdd extends MouseAdapter {
-
-        @Override
-        public void mousePressed(MouseEvent e) {
-            super.mousePressed(e);
-            urlList.add(JOptionPane.showInputDialog(null,"Введите url сайта"));
-            saveURL(urlList);
-            writeWeb();
-//            jScrollPaneWeb.repaint();
-            
-        }
-    }
-    
-
+//    Загрузка массива сайтов с диска
     private static ArrayList<String> loadURL(){
         ArrayList<String> arrayURL = new ArrayList<>();
         File file = new File("urlWeb.ser");
@@ -149,6 +193,7 @@ public class Viewer extends JFrame {
         return arrayURL;
         }
 
+//        Сохранение массива сайтов на диск
         private static void saveURL(ArrayList arraySaveUrl){
 
             FileOutputStream fileOutputStream = null;
@@ -168,29 +213,7 @@ public class Viewer extends JFrame {
             }
     }
 
-
-
-//  Слушатель кнопки Update
-    private static class MyLisenMouseUpdate extends MouseAdapter {
-
-        @Override
-        public void mousePressed(MouseEvent e) {
-            super.mousePressed(e);
-            String tempStr;
-            temp++;
-            tempStr = "News Title "+temp + "\n" +"Link "+temp + "\n" +"discription "+"\n\n";
-            news = tempStr + news;
-
-            jTextPaneNews.setText(news);
-            jTextPaneNews.setCaretPosition(0);
-        }
-    }
-
-
-    public void updateNewsList(List<NewsItem> news) {
-
-    }
-
+//  Это геттер на массив сайтов
     public static List<String> getUrlList() {
         return urlList;
     }
