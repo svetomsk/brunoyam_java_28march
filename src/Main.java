@@ -1,9 +1,16 @@
+import network.NetworkHelper;
+import parser.NewsItem;
+import parser.XMLParser;
 import viewer.Viewer;
 
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.*;
+import java.util.List;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, ParserConfigurationException {
 //        System.out.println("new string print");
 //
 //        Connection connection;
@@ -23,6 +30,8 @@ public class Main {
 //            System.out.println(resultSet.);
 //        }
 
-        new Viewer();
+//        new Viewer();
+        String data = NetworkHelper.fetchHTML("https://www.sports.ru/tribuna/blogs/utkin/rss.xml");
+        List<NewsItem> items = XMLParser.parseXML(data);
     }
 }
