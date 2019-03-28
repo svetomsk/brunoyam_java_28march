@@ -1,9 +1,12 @@
+import network.NetworkHelper;
 import viewer.Viewer;
 
+import java.io.IOException;
 import java.sql.*;
+import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 //        System.out.println("new string print");
 //
 //        Connection connection;
@@ -23,6 +26,13 @@ public class Main {
 //            System.out.println(resultSet.);
 //        }
 
-        new Viewer();
+//        new Viewer();
+
+        System.out.println("Введите URL");
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+
+        System.out.println(NetworkHelper.fetchHTML(s));
+
     }
 }
